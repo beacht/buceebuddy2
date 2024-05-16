@@ -2,15 +2,41 @@
 import React from 'react';
 import LinkButton from './LinkButton';
 
+interface Trip {
+  id: string;
+  date: string;
+  items: string;
+  lifetimeTripIdx: number;
+  location: number;
+  locationTripIdx: number;
+  state: string;
+  stateTripIdx: number;
+  total: number;
+}
+
+interface Location {
+  id: number;
+  address: string;
+  city: string;
+  latitude: number;
+  longitude: number;
+  state: string;
+}
+
 interface TripCardProps {
+  trip: Trip;
   date: string;
   price: string;
-  location: string;
+  locationDoc: Location | undefined;
+  locationString: string;
   state: string;
   items: string;
   locationVisitNumber: number;
   stateVisitNumber: number;
   lifetimeVisitNumber: number;
+  // setTripToBeDeleted: (arg0: Trip) => void;
+  // setIsDeletingTrip: (arg0: boolean) => void;
+  setLocationViewed: (arg0: Location | undefined) => void;
 }
 
 function getOrdinalSuffix(val: number): string {
@@ -32,19 +58,19 @@ function getOrdinalSuffix(val: number): string {
   }
 }
 
-const TripCard: React.FC<TripCardProps> = ({ date, price, location, items, locationVisitNumber, stateVisitNumber, lifetimeVisitNumber, state}) => {
+const TripCard: React.FC<TripCardProps> = ({trip, date, price, locationDoc, locationString, items, locationVisitNumber, stateVisitNumber, lifetimeVisitNumber, state, setLocationViewed}) => {
   return (
     <div className="w-full flex-col rounded-xl bg-white p-4 text-left mb-8 text-black">
       <div className="flex flex-row justify-between text-xl font-medium">
         <p>{date}</p>
         <p>${price}</p>
       </div>            
-      <p>{location}</p>
+      <p>{locationString}</p>
       <p>{items}</p>
       <p>{getOrdinalSuffix(locationVisitNumber)} location trip, {getOrdinalSuffix(stateVisitNumber)} {state} trip, {getOrdinalSuffix(lifetimeVisitNumber)} ever</p>
       <div className="flex flex-col gap-4 w-full md:flex-row justify-center items-center md:justify-center mt-3">
-        <LinkButton textSize="text-sm lg:text-xl" className='w-[70%] md:w-[40%]' label='Delete' href='/' color="red"/>
-        <LinkButton textSize="text-sm lg:text-xl" className='w-[70%] md:w-[40%]' label='Directions' href='/' color="yellow"/>
+        {/* <LinkButton textSize="text-sm lg:text-xl" className='w-[70%] md:w-[40%]' label='Delete' onClick={() => {setTripToBeDeleted(trip); setIsDeletingTrip(true);}} color="red"/> */}
+        <LinkButton textSize="text-sm lg:text-xl" className='w-[70%] md:w-[40%]' label='Directions' onClick={() => {setLocationViewed(locationDoc)}} color="yellow"/>
       </div>
     </div>
   );

@@ -7,7 +7,7 @@ import firebase from '../../../firebase'; // Assuming firebase config is properl
 import LinkButton from '../components/LinkButton';
 import TextInput from '../components/TextInput';
 import TripCard from '../components/TripCard';
-import { parse } from 'path';
+import {GoogleMap, Marker, LoadScript} from '@react-google-maps/api'
 
 interface Location {
   id: number;
@@ -58,6 +58,7 @@ export default function Home() {
   const [items, setItems] = useState('');
   const [user, setUser] = useState<User>();
   const [trips, setTrips] = useState<Trip[]>([]);
+  const [locationViewed, setLocationViewed] = useState<Location | undefined>();
 
   const getLocationsAndUser = useCallback(async () => {
     try {
@@ -82,7 +83,6 @@ export default function Home() {
           const tripData = {id: doc.id, date: doc.data().date, location: doc.data().location, items: doc.data().items, total: doc.data().total, lifetimeTripIdx: doc.data().lifetimeTripIdx, locationTripIdx: doc.data().locationTripIdx, state: doc.data().state, stateTripIdx: doc.data().stateTripIdx};
           return tripData;
         })
-        // const tripsData = tripsSnapshot.docs.map(id: doc.id, ...doc.data()) as Trip[];
         setTrips(tripsData);
       } else {
         console.error('User document not found');
@@ -176,27 +176,70 @@ export default function Home() {
     if(parseFloat(total) === 0 || total == '') {alert('Please enter the total spent!'); errorFlag = true;}
     if(items == '') {alert('Please select your purchases!'); errorFlag = true;}
     
-    if(!errorFlag){
+    if(!errorFlag && user){
       try {
         console.log(location);
         const state = locations.find(thisLocation => thisLocation.id === getLocationNumber())?.state || "NONE";
+        const stateNumber = getStateNumber(state);
+        const locationNumber = getLocationNumber();
+        const totalNumeric = parseFloat(total);
         await firebase.firestore().collection('users').doc('AEHJYprzdQZtO8MgXiKh').collection('trips').add({
           date: formatDate(date),
           items: items,
-          total: total,
-          location: getLocationNumber(),
+          total: totalNumeric,
+          location: locationNumber,
           state: state || "NONE",
           lifetimeTripIdx: (user?.totalTrips || 0) + 1,
-          stateTripIdx: (user?.stateTrips[getStateNumber(state)] || 0) + 1,
-          locationTripIdx: (user?.locationTrips[parseInt(location)] || 0) + 1,
+          stateTripIdx: (user?.stateTrips[stateNumber] || 0) + 1,
+          locationTripIdx: (user?.locationTrips[locationNumber] || 0) + 1,
         });
 
-        await firebase.firestore().collection('users').doc('AEHJYprzdQZtO8MgXiKh').update({
+        console.log(user.locationTotals[locationNumber], '+', totalNumeric, '=', user.locationTotals[locationNumber] + totalNumeric);
+        console.log('>=', user.locationTotals[user.mostSpentLocation]);
+        console.log(user.locationTotals[locationNumber] + totalNumeric >= user.locationTotals[user.mostSpentLocation]);
+        console.log(user.mostSpentLocation === 0);
 
+        await firebase.firestore().collection('users').doc('AEHJYprzdQZtO8MgXiKh').update({
+          ...((user.locationTrips[locationNumber] === 0 || !user.locationTrips[locationNumber]) && {[`totalLocations`]: firebase.firestore.FieldValue.increment(1)}),
+          ...((user.stateTrips[stateNumber] === 0 || !user.stateTrips[stateNumber]) && {[`totalStates`]: firebase.firestore.FieldValue.increment(1)}),
+          [`stateTrips.${stateNumber}`]: firebase.firestore.FieldValue.increment(1),
+          [`stateTotals.${stateNumber}`]: firebase.firestore.FieldValue.increment(totalNumeric),
+          [`grandTotal`]: firebase.firestore.FieldValue.increment(totalNumeric),
+          ...((user.mostSpentLocation === 0 || (user.locationTotals[locationNumber] || 0) + totalNumeric >= user.locationTotals[user.mostSpentLocation]) && {mostSpentLocation: locationNumber}),
+          ...((user.mostVisitedLocation === 0 || (user.locationTrips[locationNumber] || 0) + 1 >= user.locationTrips[user.mostVisitedLocation]) && {mostVisitedLocation: locationNumber}),
+          ...((user?.locationTrips[locationNumber] === 0 || !user.locationTrips[locationNumber]) && { [`stateUniques.${stateNumber}`]: firebase.firestore.FieldValue.increment(1) }),
+          [`locationTotals.${locationNumber}`]: firebase.firestore.FieldValue.increment(totalNumeric),
+          [`locationTrips.${locationNumber}`]: firebase.firestore.FieldValue.increment(1),
+          
+          ...(items.includes("Brisket") && (user.mostBoughtItem === -1 || user.itemTrips[0] + 1 >= user.itemTrips[user.mostBoughtItem]) && { mostBoughtItem: 0 }),
+          ...(items.includes("Clothing") && (user.mostBoughtItem === -1  || user.itemTrips[1] + 1 >= user.itemTrips[user.mostBoughtItem]) && { mostBoughtItem: 1 }),
+          ...(items.includes("Cold Grab n Go") && (user.mostBoughtItem === -1  || user.itemTrips[2] + 1 >= user.itemTrips[user.mostBoughtItem]) && { mostBoughtItem: 2 }),
+          ...(items.includes("Dessert") && (user.mostBoughtItem === -1  || user.itemTrips[3] + 1 >= user.itemTrips[user.mostBoughtItem]) && { mostBoughtItem: 3 }),
+          ...(items.includes("Gas") && (user.mostBoughtItem === -1  || user.itemTrips[4] + 1 >= user.itemTrips[user.mostBoughtItem]) && { mostBoughtItem: 4 }),
+          ...(items.includes("Home Goods") && (user.mostBoughtItem === -1  || user.itemTrips[5] + 1 >= user.itemTrips[user.mostBoughtItem]) && { mostBoughtItem: 5 }),
+          ...(items.includes("Hot Grab n Go") && (user.mostBoughtItem === -1  || user.itemTrips[6] + 1 >= user.itemTrips[user.mostBoughtItem]) && { mostBoughtItem: 6 }),
+          ...(items.includes("Jerky") && (user.mostBoughtItem === -1  || user.itemTrips[7] + 1 >= user.itemTrips[user.mostBoughtItem]) && { mostBoughtItem: 7 }),
+          ...(items.includes("Outdoors") && (user.mostBoughtItem === -1  || user.itemTrips[8] + 1 >= user.itemTrips[user.mostBoughtItem]) && { mostBoughtItem: 8 }),
+          ...(items.includes("Snacks") && (user.mostBoughtItem === -1  || user.itemTrips[9] + 1 >= user.itemTrips[user.mostBoughtItem]) && { mostBoughtItem: 9 }),
+          ...(items.includes("Brisket") && { [`itemTrips.0`]: firebase.firestore.FieldValue.increment(1) }),
+          ...(items.includes("Clothing") && { [`itemTrips.1`]: firebase.firestore.FieldValue.increment(1) }),
+          ...(items.includes("Cold Grab n Go") && { [`itemTrips.2`]: firebase.firestore.FieldValue.increment(1) }),
+          ...(items.includes("Dessert") && { [`itemTrips.3`]: firebase.firestore.FieldValue.increment(1) }),
+          ...(items.includes("Gas") && { [`itemTrips.4`]: firebase.firestore.FieldValue.increment(1) }),
+          ...(items.includes("Home Goods") && { [`itemTrips.5`]: firebase.firestore.FieldValue.increment(1) }),
+          ...(items.includes("Hot Grab n Go") && { [`itemTrips.6`]: firebase.firestore.FieldValue.increment(1) }),
+          ...(items.includes("Jerky") && { [`itemTrips.7`]: firebase.firestore.FieldValue.increment(1) }),
+          ...(items.includes("Outdoors") && { [`itemTrips.8`]: firebase.firestore.FieldValue.increment(1) }),
+          ...(items.includes("Snacks") && { [`itemTrips.9`]: firebase.firestore.FieldValue.increment(1) }),
+          
+          [`totalTrips`]: firebase.firestore.FieldValue.increment(1),
         })
 
+        setIsAddingTrip(false);
+        window.location.reload();
+
       } catch (error) {
-        console.error('Error adding card:', error);
+        console.error('Error adding trip:', error);
       }
     }
   }
@@ -206,71 +249,97 @@ export default function Home() {
       {user && locations && <div className="flex flex-col md:flex-row pt-40 items-center md:items-start w-full justify-center gap-8">
         <div className="flex flex-col text-center w-[80%] md:w-[40%]">
           <p className="text-3xl font-semibold text-center md:text-left w-full">Welcome, {user.firstName}!</p>
-          <div className="w-full h-[500px] rounded-xl bg-blue-500 mt-8 mb-4"></div>
+          <div className="w-full h-[500px] rounded-xl bg-blue-500 mt-8 mb-4">
+            <LoadScript googleMapsApiKey='AIzaSyBiHdtgtO9nc0Kq8y8GPeoJz1MGhLiH2aI'>
+              <GoogleMap
+                mapContainerStyle={{width: '100%', height: '100%', borderRadius: '12px'}}
+                zoom={5}
+                center={{lat: 35.1495, lng: -92.0490}}
+              >
+                {locations.map((location) => {
+                  const hasTrips = user.locationTrips[location.id] >= 1;
+                  const iconUrl = hasTrips ? 'https://i.imgur.com/oMJORMV.png' : 'https://i.imgur.com/iUFTKnU.png';
+
+                  return (
+                    <Marker
+                      key={location.id}
+                      position={{ lat: location.latitude, lng: location.longitude }}
+                      title={location.address}
+                      icon={{ url: iconUrl}}
+                    />
+                  );
+                })}
+              </GoogleMap>
+            </LoadScript>
+          </div>
 
 
           <div className="w-full my-4 flex-col rounded-xl bg-white p-4 text-left mb-8 text-lg font-medium text-black">
             <p className="text-xl font-semibold">Trip Statistics</p>
             <div className="flex flex-col md:flex-row justify-between">
-              <p>Alabama: {user.stateUniques[0]}/4 ({user.stateTrips[0]} trips, ${user.stateTotals[0].toPrecision(3)})</p>
-              <p className="md:text-right">Colorado: {user.stateUniques[5]}/1 ({user.stateTrips[5]} trips, ${user.stateTotals[5].toPrecision(3)})</p>
+                <p>Alabama: {user.stateUniques[0] || 0}/4 ({user.stateTrips[0] || 0} {user.stateTrips[0] === 1 ? 'trip' : 'trips'}, ${user.stateTotals[0] ? (Number.isInteger(user.stateTotals[0]) ? user.stateTotals[0] : user.stateTotals[0].toPrecision(3)) : '0.00'})</p>
+                <p className="md:text-right">Colorado: {user.stateUniques[5] || 0}/1 ({user.stateTrips[5] || 0} {user.stateTrips[5] === 1 ? 'trip' : 'trips'}, ${user.stateTotals[5] ? (Number.isInteger(user.stateTotals[5]) ? user.stateTotals[5] : user.stateTotals[5].toPrecision(3)) : '0.00'})</p>
             </div>
             <div className="flex flex-col md:flex-row justify-between">
-              <p>Florida: {user.stateUniques[8]}/2 ({user.stateTrips[8]} trips, ${user.stateTotals[8].toPrecision(3)})</p>
-              <p className="md:text-right">Georgia: {user.stateUniques[9]}/2 ({user.stateTrips[9]} trips, ${user.stateTotals[9].toPrecision(3)})</p>
+                <p>Florida: {user.stateUniques[8] || 0}/2 ({user.stateTrips[8] || 0} {user.stateTrips[8] === 1 ? 'trip' : 'trips'}, ${user.stateTotals[8] ? (Number.isInteger(user.stateTotals[8]) ? user.stateTotals[8] : user.stateTotals[8].toPrecision(3)) : '0.00'})</p>
+                <p className="md:text-right">Georgia: {user.stateUniques[9] || 0}/2 ({user.stateTrips[9] || 0} {user.stateTrips[9] === 1 ? 'trip' : 'trips'}, ${user.stateTotals[9] ? (Number.isInteger(user.stateTotals[9]) ? user.stateTotals[9] : user.stateTotals[9].toPrecision(3)) : '0.00'})</p>
             </div>
             <div className="flex flex-col md:flex-row justify-between">
-              <p>Kentucky: {user.stateUniques[16]}/1 ({user.stateTrips[16]} trips, ${user.stateTotals[16].toPrecision(3)})</p>
-              <p className="md:text-right">Missouri: {user.stateUniques[24]}/1 ({user.stateTrips[24]} trips, ${user.stateTotals[24].toPrecision(3)})</p>
-            </div><div className="flex flex-col md:flex-row justify-between">
-              <p>South Carolina: {user.stateUniques[39]}/1 ({user.stateTrips[39]} trips, ${user.stateTotals[39].toPrecision(3)})</p>
-              <p className="md:text-right">Tennessee: {user.stateUniques[41]}/2 ({user.stateTrips[41]} trips, ${user.stateTotals[41].toPrecision(3)})</p>
+                <p>Kentucky: {user.stateUniques[16] || 0}/1 ({user.stateTrips[16] || 0} {user.stateTrips[16] === 1 ? 'trip' : 'trips'}, ${user.stateTotals[16] ? (Number.isInteger(user.stateTotals[16]) ? user.stateTotals[16] : user.stateTotals[16].toPrecision(3)) : '0.00'})</p>
+                <p className="md:text-right">Missouri: {user.stateUniques[24] || 0}/1 ({user.stateTrips[24] || 0} {user.stateTrips[24] === 1 ? 'trip' : 'trips'}, ${user.stateTotals[24] ? (Number.isInteger(user.stateTotals[24]) ? user.stateTotals[24] : user.stateTotals[24].toPrecision(3)) : '0.00'})</p>
             </div>
-            <p>Texas: {user.stateUniques[42]}/35 ({user.stateTrips[42]} trips, ${user.stateTotals[42].toPrecision(3)})</p>
+            <div className="flex flex-col md:flex-row justify-between">
+                <p>South Carolina: {user.stateUniques[39] || 0}/1 ({user.stateTrips[39] || 0} {user.stateTrips[39] === 1 ? 'trip' : 'trips'}, ${user.stateTotals[39] ? (Number.isInteger(user.stateTotals[39]) ? user.stateTotals[39] : user.stateTotals[39].toPrecision(3)) : '0.00'})</p>
+                <p className="md:text-right">Tennessee: {user.stateUniques[41] || 0}/2 ({user.stateTrips[41] || 0} {user.stateTrips[41] === 1 ? 'trip' : 'trips'}, ${user.stateTotals[41] ? (Number.isInteger(user.stateTotals[41]) ? user.stateTotals[41] : user.stateTotals[41].toPrecision(3)) : '0.00'})</p>
+            </div>
+            <p>Texas: {user.stateUniques[42] || 0}/35 ({user.stateTrips[42] || 0} {user.stateTrips[42] === 1 ? 'trip' : 'trips'}, ${user.stateTotals[42] ? (Number.isInteger(user.stateTotals[42]) ? user.stateTotals[42] : user.stateTotals[42].toPrecision(3)) : '0.00'})</p>
             <br></br>
 
             <div className="flex flex-col md:flex-row justify-between">
-              <p>Brisket: {user.itemTrips[0]} trips</p>
-              <p className="md:text-right">Clothing: {user.itemTrips[1]} trips</p>
-            </div><div className="flex flex-col md:flex-row justify-between">
-              <p>Cold Grab n Go: {user.itemTrips[2]} trips</p>
-              <p className="md:text-right">Dessert: {user.itemTrips[3]} trips</p>
+                <p>Brisket: {user.itemTrips[0] || 0} {user.itemTrips[0] === 1 ? 'trip' : 'trips'}</p>
+                <p className="md:text-right">Clothing: {user.itemTrips[1] || 0} {user.itemTrips[1] === 1 ? 'trip' : 'trips'}</p>
             </div>
             <div className="flex flex-col md:flex-row justify-between">
-              <p>Gas: {user.itemTrips[4]} trips</p>
-              <p className="md:text-right">Home Goods: {user.itemTrips[5]} trips</p>
-            </div><div className="flex flex-col md:flex-row justify-between">
-              <p>Hot Grab n Go: {user.itemTrips[6]} trips</p>
-              <p className="md:text-right">Jerky: {user.itemTrips[7]} trips</p>
+                <p>Cold Grab n Go: {user.itemTrips[2] || 0} {user.itemTrips[2] === 1 ? 'trip' : 'trips'}</p>
+                <p className="md:text-right">Dessert: {user.itemTrips[3] || 0} {user.itemTrips[3] === 1 ? 'trip' : 'trips'}</p>
             </div>
             <div className="flex flex-col md:flex-row justify-between">
-              <p>Outdoors: {user.itemTrips[8]} trips</p>
-              <p className="md:text-right">Snacks: {user.itemTrips[9]} trips</p>
+                <p>Gas: {user.itemTrips[4] || 0} {user.itemTrips[4] === 1 ? 'trip' : 'trips'}</p>
+                <p className="md:text-right">Home Goods: {user.itemTrips[5] || 0} {user.itemTrips[5] === 1 ? 'trip' : 'trips'}</p>
+            </div>
+            <div className="flex flex-col md:flex-row justify-between">
+                <p>Hot Grab n Go: {user.itemTrips[6] || 0} {user.itemTrips[6] === 1 ? 'trip' : 'trips'}</p>
+                <p className="md:text-right">Jerky: {user.itemTrips[7] || 0} {user.itemTrips[7] === 1 ? 'trip' : 'trips'}</p>
+            </div>
+            <div className="flex flex-col md:flex-row justify-between">
+                <p>Outdoors: {user.itemTrips[8] || 0} {user.itemTrips[8] === 1 ? 'trip' : 'trips'}</p>
+                <p className="md:text-right">Snacks: {user.itemTrips[9] || 0} {user.itemTrips[9] === 1 ? 'trip' : 'trips'}</p>
             </div>
             <br></br>
 
             <p>
-              Most Visited Location: 
-              {user.mostVisitedLocation === 0 ? 
-                " Nowhere yet!" : 
-                ` #${user.mostVisitedLocation} ${locations.find(location => location.id === user.mostVisitedLocation)?.city || "NONE"}, ${locations.find(location => location.id === user.mostVisitedLocation)?.state || "NONE"} ($${user.locationTotals[user.mostVisitedLocation]?.toPrecision(3) || "0.00"} in ${user.locationTrips[user.mostVisitedLocation] || 0} trips)`
-              }
+                Most Visited Location: 
+                {!user.mostVisitedLocation ? 
+                    " Nowhere yet!" : 
+                    ` #${user.mostVisitedLocation} ${locations.find(location => location.id === user.mostVisitedLocation)?.city || "NONE"}, ${locations.find(location => location.id === user.mostVisitedLocation)?.state || "NONE"} ($${Number.isInteger(user.locationTotals[user.mostVisitedLocation]) ? user.locationTotals[user.mostVisitedLocation] : user.locationTotals[user.mostVisitedLocation]?.toPrecision(3) || "0.00"} in ${user.locationTrips[user.mostVisitedLocation] || 0} trip${user.locationTrips[user.mostVisitedLocation] === 1 ? '' : 's'})`
+                }
             </p>
             <p>
-              Most Spent Location: 
-              {user.mostSpentLocation === 0 ? 
-                " Nowhere yet!" : 
-                ` #${user.mostSpentLocation} ${locations.find(location => location.id === user.mostSpentLocation)?.city || "NONE"}, ${locations.find(location => location.id === user.mostSpentLocation)?.state || "NONE"} ($${user.locationTotals[user.mostSpentLocation]?.toPrecision(3) || "0.00"} in ${user.locationTrips[user.mostSpentLocation] || 0} trips)`
-              }
+                Most Spent Location: 
+                {!user.mostSpentLocation ? 
+                    " Nowhere yet!" : 
+                    ` #${user.mostSpentLocation} ${locations.find(location => location.id === user.mostSpentLocation)?.city || "NONE"}, ${locations.find(location => location.id === user.mostSpentLocation)?.state || "NONE"} ($${Number.isInteger(user.locationTotals[user.mostSpentLocation]) ? user.locationTotals[user.mostSpentLocation] : user.locationTotals[user.mostSpentLocation]?.toPrecision(3) || "0.00"} in ${user.locationTrips[user.mostSpentLocation] || 0} trip${user.locationTrips[user.mostSpentLocation] === 1 ? '' : 's'})`
+                }
             </p>
             <p>
-              Most Bought Item: 
-              {user.itemTrips[user.mostBoughtItem] === 0 ? 
-                " Nothing yet!" : 
-                ` ${itemIndexToName(user.mostBoughtItem)} (${user.itemTrips[user.mostBoughtItem]} trips)`
-              }
+                Most Bought Item: 
+                {(user.mostBoughtItem === -1) ? 
+                    " Nothing yet!"  : 
+                    ` ${itemIndexToName(user.mostBoughtItem)} (${user.itemTrips[user.mostBoughtItem]} trip${user.itemTrips[user.mostBoughtItem] === 1 ? '' : 's'})`
+                }
             </p>
-            <p className="text-xl font-semibold">Grand Total: ${user.grandTotal.toPrecision(3)} in {user.totalTrips} trips to {user.totalLocations} locations across {user.totalStates} states</p>
+            <p className="text-xl font-semibold">Grand Total: ${Number.isInteger(user.grandTotal) ? user.grandTotal : user.grandTotal.toPrecision(3)} in {user.totalTrips} trip{user.totalTrips === 1 ? '' : 's'} to {user.totalLocations} location{user.totalLocations === 1 ? '' : 's'} {user.totalStates === 1 ? 'in' : 'across'} {user.totalStates} state{user.totalStates === 1 ? '' : 's'}</p>
+
           </div>
         </div>
 
@@ -280,17 +349,20 @@ export default function Home() {
             <LinkButton label='Add Trip' className='w-full md:w-[70%] mt-3 md:mt-0' color='yellow' onClick={() => setIsAddingTrip(true)}></LinkButton>
           </div>
           <div className="my-4 w-full">
-            {trips && trips.map((trip, index) => (
+            {trips && trips.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map((trip, index) => (
               <TripCard
+                trip={trip}
                 key={index}
+                locationDoc={locations.filter(loc => loc.id == trip.location).at(0)}
                 date={trip.date}
-                price={trip.total.toPrecision(3)}
-                location={`#${trip.location} ${locations.find(location => location.id === trip.location)?.city || "NONE"}, ${trip.state}`}
+                price={Number.isInteger(trip.total) ? trip.total.toString() : trip.total.toPrecision(3)}
+                locationString={`#${trip.location} ${locations.find(location => location.id === trip.location)?.city || "NONE"}, ${trip.state}`}
                 items={trip.items}
                 locationVisitNumber={trip.locationTripIdx}
                 stateVisitNumber={trip.stateTripIdx}
                 lifetimeVisitNumber={trip.lifetimeTripIdx}
                 state={trip.state}
+                setLocationViewed={setLocationViewed}
               />
             ))}
           </div>
@@ -300,7 +372,7 @@ export default function Home() {
       {isAddingTrip && (
         <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex justify-center items-center text-black">
           <div className="flex flex-col items-center bg-gray-200 p-8 rounded-xl">
-            <p className="text-2xl font-semibold w-full text-center mb-4">Add Trip {total}</p>
+            <p className="text-2xl font-semibold w-full text-center mb-4">Add Trip</p>
             <TextInput type='date' label='Date' className='w-full' onChange={handleDateChange} value={date}/>
 
             <div className='w-full flex flex-col items-center mb-4'>
