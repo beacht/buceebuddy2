@@ -7,7 +7,8 @@ import firebase from '../../../firebase'; // Assuming firebase config is properl
 import LinkButton from '../components/LinkButton';
 import TextInput from '../components/TextInput';
 import TripCard from '../components/TripCard';
-import {GoogleMap, Marker, LoadScript} from '@react-google-maps/api'
+import { GoogleMap, Marker, LoadScript } from '@react-google-maps/api';
+import { useRouter } from 'next/navigation';
 
 interface Location {
   id: number;
@@ -48,7 +49,6 @@ interface User {
   trips: Trip[];
 }
 
-
 export default function Home() {
   const [locations, setLocations] = useState<Location[]>([]);
   const [isAddingTrip, setIsAddingTrip] = useState(false);
@@ -59,30 +59,31 @@ export default function Home() {
   const [user, setUser] = useState<User>();
   const [trips, setTrips] = useState<Trip[]>([]);
   const [locationViewed, setLocationViewed] = useState<Location | undefined>();
+  const router = useRouter();
 
-  const getLocationsAndUser = useCallback(async () => {
+  const getLocationsAndUser = useCallback(async (userId: string) => {
     try {
       const locationsRef = firebase.firestore().collection('locations');
       const locationsSnapshot = await locationsRef.get();
       const locationsData = locationsSnapshot.docs.map(doc => {
-        const locationData = { id: parseInt(doc.id), address: doc.data().address, city: doc.data().city, latitude: doc.data().latitude, longitude: doc.data().longitude, state: doc.data().state,  ...doc.data() };
-        return locationData; // Remove the mapping to document ID
+        const locationData = { id: parseInt(doc.id), address: doc.data().address, city: doc.data().city, latitude: doc.data().latitude, longitude: doc.data().longitude, state: doc.data().state, ...doc.data() };
+        return locationData;
       });
       setLocations(locationsData);
       console.log(locationsData);
-  
+
       const usersRef = firebase.firestore().collection('users');
-      const userData = await usersRef.doc('AEHJYprzdQZtO8MgXiKh').get(); // Get the user document
+      const userData = await usersRef.doc(userId).get(); // Use dynamic user ID
       if (userData.exists) {
         const userDataObject = userData.data() as User;
         setUser(userDataObject);
-  
-        const tripsRef = usersRef.doc('AEHJYprzdQZtO8MgXiKh').collection('trips'); // Get the trips collection
+
+        const tripsRef = usersRef.doc(userId).collection('trips'); // Use dynamic user ID
         const tripsSnapshot = await tripsRef.get();
         const tripsData = tripsSnapshot.docs.map(doc => {
-          const tripData = {id: doc.id, date: doc.data().date, location: doc.data().location, items: doc.data().items, total: doc.data().total, lifetimeTripIdx: doc.data().lifetimeTripIdx, locationTripIdx: doc.data().locationTripIdx, state: doc.data().state, stateTripIdx: doc.data().stateTripIdx};
+          const tripData = { id: doc.id, date: doc.data().date, location: doc.data().location, items: doc.data().items, total: doc.data().total, lifetimeTripIdx: doc.data().lifetimeTripIdx, locationTripIdx: doc.data().locationTripIdx, state: doc.data().state, stateTripIdx: doc.data().stateTripIdx };
           return tripData;
-        })
+        });
         setTrips(tripsData);
       } else {
         console.error('User document not found');
@@ -90,24 +91,29 @@ export default function Home() {
     } catch (error) {
       console.error('error: ', error);
     }
-  }, []); // Empty dependency array means this callback is memoized and will not change between renders
-  
+  }, []);
 
   useEffect(() => {
-    getLocationsAndUser();
-  }, [getLocationsAndUser]);
+    firebase.auth().onAuthStateChanged((user) => {
+      if (user) {
+        getLocationsAndUser(user.uid);
+      } else {
+        router.push('/login'); // Redirect to login if not authenticated
+      }
+    });
+  }, [getLocationsAndUser, router]);
 
   const handleDateChange = (newValue: string) => {
     setDate(newValue);
-  }
+  };
 
   const handleLocationChange = (newValue: string) => {
     setLocation(newValue);
-  }
+  };
 
   const handleTotalChange = (newValue: string) => {
     setTotal(newValue);
-  }
+  };
 
   const handleCheckboxChange = (item: string) => (event: React.ChangeEvent<HTMLInputElement>) => {
     const { checked } = event.target;
@@ -119,7 +125,7 @@ export default function Home() {
         return updatedItems;
       });
     }
-  }
+  };
 
   const formatDate = (dateString: string) => {
     const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -127,7 +133,7 @@ export default function Home() {
     const monthName = months[parseInt(month) - 1];
     console.log(`${monthName} ${parseInt(day)}, ${year}`);
     return `${monthName} ${parseInt(day)}, ${year}`;
-  }
+  };
 
   const itemIndexToName = (index: number) => {
     switch (index) {
@@ -143,20 +149,20 @@ export default function Home() {
       case 9: return "Snacks";
       default: return "";
     }
-  }
+  };
 
   const getStateNumber = (stateAbbreviation: string) => {
     const stateAbbreviations: string[] = [
-        "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA",
-        "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD",
-        "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ",
-        "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI", "SC",
-        "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY"
+      "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA",
+      "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD",
+      "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ",
+      "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI", "SC",
+      "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY"
     ];
 
-    if(!stateAbbreviations.includes(stateAbbreviation)) return -1;
+    if (!stateAbbreviations.includes(stateAbbreviation)) return -1;
     else return stateAbbreviations.indexOf(stateAbbreviation.toUpperCase());
-  }
+  };
 
   const getLocationNumber = () => {
     const parts = location.split(" "); // Split the string by space
@@ -183,7 +189,7 @@ export default function Home() {
         const stateNumber = getStateNumber(state);
         const locationNumber = getLocationNumber();
         const totalNumeric = parseFloat(total);
-        await firebase.firestore().collection('users').doc('AEHJYprzdQZtO8MgXiKh').collection('trips').add({
+        await firebase.firestore().collection('users').doc(firebase.auth().currentUser?.uid).collection('trips').add({
           date: formatDate(date),
           items: items,
           total: totalNumeric,
@@ -199,7 +205,7 @@ export default function Home() {
         console.log(user.locationTotals[locationNumber] + totalNumeric >= user.locationTotals[user.mostSpentLocation]);
         console.log(user.mostSpentLocation === 0);
 
-        await firebase.firestore().collection('users').doc('AEHJYprzdQZtO8MgXiKh').update({
+        await firebase.firestore().collection('users').doc(firebase.auth().currentUser?.uid).update({
           ...((user.locationTrips[locationNumber] === 0 || !user.locationTrips[locationNumber]) && {[`totalLocations`]: firebase.firestore.FieldValue.increment(1)}),
           ...((user.stateTrips[stateNumber] === 0 || !user.stateTrips[stateNumber]) && {[`totalStates`]: firebase.firestore.FieldValue.increment(1)}),
           [`stateTrips.${stateNumber}`]: firebase.firestore.FieldValue.increment(1),

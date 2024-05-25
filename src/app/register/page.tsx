@@ -5,53 +5,69 @@
 import LinkButton from '../components/LinkButton';
 import TextInput from '../components/TextInput';
 import { useState } from 'react';
+import { registerWithEmail } from '../utils/auth';
+import { useRouter } from 'next/navigation';
 
 export default function Home() {
-  
+  const router = useRouter();
   const [firstName, setFirstName] = useState<string>('');
   const [lastName, setLastName] = useState<string>('');
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [confirmPassword, setConfirmPassword] = useState<string>('');
+  const [registerError, setRegisterError] = useState<string>('');
 
   const handleFirstNameChange = (newValue: string) => {
     setFirstName(newValue);
-  }
+  };
 
   const handleLastNameChange = (newValue: string) => {
     setLastName(newValue); 
-  }
+  };
 
   const handleEmailChange = (newValue: string) => {
     setEmail(newValue);
-  }
+  };
 
   const handlePasswordChange = (newValue: string) => {
     setPassword(newValue);
-  }
+  };
 
   const handleConfirmPasswordChange = (newValue: string) => {
     setConfirmPassword(newValue); 
-  }
+  };
 
-
-  const page = "register";
+  const handleRegister = async (e: { preventDefault: () => void; }) => {
+    e.preventDefault();
+    if (password !== confirmPassword) {
+      setRegisterError('Passwords do not match');
+      return;
+    }
+    try {
+      const user = await registerWithEmail(email, password, firstName, lastName);
+      console.log('Registered user:', user);
+      router.push('/login');
+    } catch (error) {
+      console.error('Error registering:', error);
+      setRegisterError('Email already in use, please try again');
+    }
+  };
 
   return (
     <main className="flex min-h-screen flex-col items-center w-full">
-      <div className="flex flex-col-reverse md:flex-row pt-40 items-center w-full justify-center">
+      <div className="flex flex-col-reverse md:flex-row pt-20 items-center w-full justify-center">
         <div className="flex flex-col text-center w-[80%] lg:w-[40%] xl:w-[30%] items-center bg-gray-200 p-8 rounded-xl text-black">
           <p className="text-5xl font-semibold w-full">Register</p>
-
-          <div className='w-full'>
-            <TextInput className='mt-8' label='First Name' value={firstName} onChange={handleFirstNameChange}/>
-            <TextInput label='Last Name (optional)' value={lastName} onChange={handleLastNameChange}/>
-            <TextInput label='Email' type='email' value={email} onChange={handleEmailChange}/>
-            <TextInput label='Password' type='password' value={password} onChange={handlePasswordChange}/>
-            <TextInput label='Confirm Password' type='password' value={confirmPassword} onChange={handleConfirmPasswordChange}/>
+          <form className="w-full" onSubmit={handleRegister}>
+            <TextInput className='mt-8' label='First Name' value={firstName} onChange={handleFirstNameChange} />
+            <TextInput label='Last Name (optional)' value={lastName} onChange={handleLastNameChange} />
+            <TextInput label='Email' type='email' value={email} onChange={handleEmailChange} />
+            <TextInput label='Password' type='password' value={password} onChange={handlePasswordChange} />
+            <TextInput label='Confirm Password' type='password' value={confirmPassword} onChange={handleConfirmPasswordChange} />
             <p>Already have an account? <a href="/login" className="text-blue-400 underline">Log in.</a></p>
-          </div>
-          <LinkButton className='self-center mt-4 w-full md:w-full' color='red' label='Register' href='/login'/>
+            {registerError !== '' && <p className="text-bucee-red font-bold">{registerError}</p>}
+            <button type="submit" className="mt-4 self-center text-xl font-semibold text-white bg-bucee-red hover:bg-bucee-red-darker active:bg-bucee-red-darkest rounded-xl hover:cursor-pointer transition-all duration-100 py-3 px-12 md:w-[40%]">Register</button>
+          </form>
         </div>
       </div>
     </main>
