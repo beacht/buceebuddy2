@@ -9,9 +9,10 @@ const config: Config = {
   theme: {
     extend: {
       backgroundImage: {
-        "gradient-radial": "radial-gradient(circle, #B4103D, #97022A)",
-        "gradient-conic":
-          "conic-gradient(from 180deg at 50% 50%, #B4103D, #97022A)",
+        // "gradient-radial": "radial-gradient(circle, #B4103D, #97022A)",
+        // "gradient-conic":
+        //   "conic-gradient(from 180deg at 50% 50%, #B4103D, #97022A)",
+        "custom-image": "url('https://imgur.com/5ykhKdG')",
       },
       colors: {
         "bucee-red": "#B4103D",

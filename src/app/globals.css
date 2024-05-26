@@ -10,12 +10,14 @@
 
 body {
   color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+  background: url('https://i.imgur.com/lG5lnQo.png') no-repeat center center fixed;
+  background-size: auto;
+}
+
+@media (min-width: 1024px) {
+  body {
+    background-size: cover;
+  }
 }
 
 @layer utilities {

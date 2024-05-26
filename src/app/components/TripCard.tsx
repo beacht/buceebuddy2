@@ -61,7 +61,7 @@ function getOrdinalSuffix(val: number): string {
 const TripCard: React.FC<TripCardProps> = ({trip, date, price, locationDoc, locationString, items, locationVisitNumber, stateVisitNumber, lifetimeVisitNumber, state, setLocationViewed}) => {
   return (
     <div className="w-full flex-col rounded-xl bg-white p-4 text-left mb-8 text-black">
-      <div className="flex flex-row justify-between text-xl font-medium">
+      <div className="flex flex-row justify-between text-xl font-bold">
         <p>{date}</p>
         <p>${price}</p>
       </div>            
@@ -70,7 +70,7 @@ const TripCard: React.FC<TripCardProps> = ({trip, date, price, locationDoc, loca
       <p>{getOrdinalSuffix(locationVisitNumber)} location trip, {getOrdinalSuffix(stateVisitNumber)} {state} trip, {getOrdinalSuffix(lifetimeVisitNumber)} ever</p>
       <div className="flex flex-col gap-4 w-full md:flex-row justify-center items-center md:justify-center mt-3">
         {/* <LinkButton textSize="text-sm lg:text-xl" className='w-[70%] md:w-[40%]' label='Delete' onClick={() => {setTripToBeDeleted(trip); setIsDeletingTrip(true);}} color="red"/> */}
-        <LinkButton textSize="text-sm lg:text-xl" className='w-[70%] md:w-[40%]' label='Directions' onClick={() => {setLocationViewed(locationDoc)}} color="yellow"/>
+        <LinkButton textSize="text-sm lg:text-xl" className='w-[70%] md:w-[40%]' label='Directions' onClick={() => {setLocationViewed(locationDoc)}} color="red"/>
       </div>
     </div>
   );

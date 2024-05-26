@@ -59,6 +59,10 @@ export default function Home() {
   const [user, setUser] = useState<User>();
   const [trips, setTrips] = useState<Trip[]>([]);
   const [locationViewed, setLocationViewed] = useState<Location | undefined>();
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const pages = Math.ceil(trips.length / 4); //0-4 trips = 1 page, 5-8 trips = 2 pages, 9-12 trips = 3 pages, etc.
+
   const router = useRouter();
 
   const getLocationsAndUser = useCallback(async (userId: string) => {
@@ -252,9 +256,10 @@ export default function Home() {
 
   return (
     <main className="flex min-h-screen flex-col items-center w-full mb-40">
-      {user && locations && <div className="flex flex-col md:flex-row pt-40 items-center md:items-start w-full justify-center gap-8">
+      <img className="mt-14 w-[90%] md:w-[50%]" src="https://i.imgur.com/7ZrW2DR.png"></img>
+      {user && locations && <div className="flex flex-col md:flex-row pt-14 items-center md:items-start w-full justify-center gap-8">
         <div className="flex flex-col text-center w-[80%] md:w-[40%]">
-          <p className="text-3xl font-semibold text-center md:text-left w-full">Welcome, {user.firstName}!</p>
+          <p className="text-3xl font-bold text-center md:text-left w-full">Welcome, {user.firstName}!</p>
           <div className="w-full h-[500px] rounded-xl bg-blue-500 mt-8 mb-4">
             <LoadScript googleMapsApiKey='AIzaSyBiHdtgtO9nc0Kq8y8GPeoJz1MGhLiH2aI'>
               <GoogleMap
@@ -281,24 +286,24 @@ export default function Home() {
 
 
           <div className="w-full my-4 flex-col rounded-xl bg-white p-4 text-left mb-8 text-lg font-medium text-black">
-            <p className="text-xl font-semibold">Trip Statistics</p>
+            <p className="text-xl font-bold">Trip Statistics</p>
             <div className="flex flex-col md:flex-row justify-between">
-                <p>Alabama: {user.stateUniques[0] || 0}/4 ({user.stateTrips[0] || 0} {user.stateTrips[0] === 1 ? 'trip' : 'trips'}, ${user.stateTotals[0] ? (Number.isInteger(user.stateTotals[0]) ? user.stateTotals[0] : user.stateTotals[0].toPrecision(3)) : '0.00'})</p>
-                <p className="md:text-right">Colorado: {user.stateUniques[5] || 0}/1 ({user.stateTrips[5] || 0} {user.stateTrips[5] === 1 ? 'trip' : 'trips'}, ${user.stateTotals[5] ? (Number.isInteger(user.stateTotals[5]) ? user.stateTotals[5] : user.stateTotals[5].toPrecision(3)) : '0.00'})</p>
+                <p>Alabama: {user.stateUniques[0] || 0}/4 ({user.stateTrips[0] || 0} {user.stateTrips[0] === 1 ? 'trip' : 'trips'}, ${user.stateTotals[0] ? (Number.isInteger(user.stateTotals[0]) ? user.stateTotals[0] : user.stateTotals[0].toPrecision(4)) : '0.00'})</p>
+                <p className="md:text-right">Colorado: {user.stateUniques[5] || 0}/1 ({user.stateTrips[5] || 0} {user.stateTrips[5] === 1 ? 'trip' : 'trips'}, ${user.stateTotals[5] ? (Number.isInteger(user.stateTotals[5]) ? user.stateTotals[5] : user.stateTotals[5].toPrecision(4)) : '0.00'})</p>
             </div>
             <div className="flex flex-col md:flex-row justify-between">
-                <p>Florida: {user.stateUniques[8] || 0}/2 ({user.stateTrips[8] || 0} {user.stateTrips[8] === 1 ? 'trip' : 'trips'}, ${user.stateTotals[8] ? (Number.isInteger(user.stateTotals[8]) ? user.stateTotals[8] : user.stateTotals[8].toPrecision(3)) : '0.00'})</p>
-                <p className="md:text-right">Georgia: {user.stateUniques[9] || 0}/2 ({user.stateTrips[9] || 0} {user.stateTrips[9] === 1 ? 'trip' : 'trips'}, ${user.stateTotals[9] ? (Number.isInteger(user.stateTotals[9]) ? user.stateTotals[9] : user.stateTotals[9].toPrecision(3)) : '0.00'})</p>
+                <p>Florida: {user.stateUniques[8] || 0}/2 ({user.stateTrips[8] || 0} {user.stateTrips[8] === 1 ? 'trip' : 'trips'}, ${user.stateTotals[8] ? (Number.isInteger(user.stateTotals[8]) ? user.stateTotals[8] : user.stateTotals[8].toPrecision(4)) : '0.00'})</p>
+                <p className="md:text-right">Georgia: {user.stateUniques[9] || 0}/2 ({user.stateTrips[9] || 0} {user.stateTrips[9] === 1 ? 'trip' : 'trips'}, ${user.stateTotals[9] ? (Number.isInteger(user.stateTotals[9]) ? user.stateTotals[9] : user.stateTotals[9].toPrecision(4)) : '0.00'})</p>
             </div>
             <div className="flex flex-col md:flex-row justify-between">
-                <p>Kentucky: {user.stateUniques[16] || 0}/1 ({user.stateTrips[16] || 0} {user.stateTrips[16] === 1 ? 'trip' : 'trips'}, ${user.stateTotals[16] ? (Number.isInteger(user.stateTotals[16]) ? user.stateTotals[16] : user.stateTotals[16].toPrecision(3)) : '0.00'})</p>
-                <p className="md:text-right">Missouri: {user.stateUniques[24] || 0}/1 ({user.stateTrips[24] || 0} {user.stateTrips[24] === 1 ? 'trip' : 'trips'}, ${user.stateTotals[24] ? (Number.isInteger(user.stateTotals[24]) ? user.stateTotals[24] : user.stateTotals[24].toPrecision(3)) : '0.00'})</p>
+                <p>Kentucky: {user.stateUniques[16] || 0}/1 ({user.stateTrips[16] || 0} {user.stateTrips[16] === 1 ? 'trip' : 'trips'}, ${user.stateTotals[16] ? (Number.isInteger(user.stateTotals[16]) ? user.stateTotals[16] : user.stateTotals[16].toPrecision(4)) : '0.00'})</p>
+                <p className="md:text-right">Missouri: {user.stateUniques[24] || 0}/1 ({user.stateTrips[24] || 0} {user.stateTrips[24] === 1 ? 'trip' : 'trips'}, ${user.stateTotals[24] ? (Number.isInteger(user.stateTotals[24]) ? user.stateTotals[24] : user.stateTotals[24].toPrecision(4)) : '0.00'})</p>
             </div>
             <div className="flex flex-col md:flex-row justify-between">
-                <p>South Carolina: {user.stateUniques[39] || 0}/1 ({user.stateTrips[39] || 0} {user.stateTrips[39] === 1 ? 'trip' : 'trips'}, ${user.stateTotals[39] ? (Number.isInteger(user.stateTotals[39]) ? user.stateTotals[39] : user.stateTotals[39].toPrecision(3)) : '0.00'})</p>
-                <p className="md:text-right">Tennessee: {user.stateUniques[41] || 0}/2 ({user.stateTrips[41] || 0} {user.stateTrips[41] === 1 ? 'trip' : 'trips'}, ${user.stateTotals[41] ? (Number.isInteger(user.stateTotals[41]) ? user.stateTotals[41] : user.stateTotals[41].toPrecision(3)) : '0.00'})</p>
+                <p>South Carolina: {user.stateUniques[39] || 0}/1 ({user.stateTrips[39] || 0} {user.stateTrips[39] === 1 ? 'trip' : 'trips'}, ${user.stateTotals[39] ? (Number.isInteger(user.stateTotals[39]) ? user.stateTotals[39] : user.stateTotals[39].toPrecision(4)) : '0.00'})</p>
+                <p className="md:text-right">Tennessee: {user.stateUniques[41] || 0}/2 ({user.stateTrips[41] || 0} {user.stateTrips[41] === 1 ? 'trip' : 'trips'}, ${user.stateTotals[41] ? (Number.isInteger(user.stateTotals[41]) ? user.stateTotals[41] : user.stateTotals[41].toPrecision(4)) : '0.00'})</p>
             </div>
-            <p>Texas: {user.stateUniques[42] || 0}/35 ({user.stateTrips[42] || 0} {user.stateTrips[42] === 1 ? 'trip' : 'trips'}, ${user.stateTotals[42] ? (Number.isInteger(user.stateTotals[42]) ? user.stateTotals[42] : user.stateTotals[42].toPrecision(3)) : '0.00'})</p>
+            <p>Texas: {user.stateUniques[42] || 0}/35 ({user.stateTrips[42] || 0} {user.stateTrips[42] === 1 ? 'trip' : 'trips'}, ${user.stateTotals[42] ? (Number.isInteger(user.stateTotals[42]) ? user.stateTotals[42] : user.stateTotals[42].toPrecision(4)) : '0.00'})</p>
             <br></br>
 
             <div className="flex flex-col md:flex-row justify-between">
@@ -327,14 +332,14 @@ export default function Home() {
                 Most Visited Location: 
                 {!user.mostVisitedLocation ? 
                     " Nowhere yet!" : 
-                    ` #${user.mostVisitedLocation} ${locations.find(location => location.id === user.mostVisitedLocation)?.city || "NONE"}, ${locations.find(location => location.id === user.mostVisitedLocation)?.state || "NONE"} ($${Number.isInteger(user.locationTotals[user.mostVisitedLocation]) ? user.locationTotals[user.mostVisitedLocation] : user.locationTotals[user.mostVisitedLocation]?.toPrecision(3) || "0.00"} in ${user.locationTrips[user.mostVisitedLocation] || 0} trip${user.locationTrips[user.mostVisitedLocation] === 1 ? '' : 's'})`
+                    ` #${user.mostVisitedLocation} ${locations.find(location => location.id === user.mostVisitedLocation)?.city || "NONE"}, ${locations.find(location => location.id === user.mostVisitedLocation)?.state || "NONE"} ($${Number.isInteger(user.locationTotals[user.mostVisitedLocation]) ? user.locationTotals[user.mostVisitedLocation] : user.locationTotals[user.mostVisitedLocation]?.toPrecision(4) || "0.00"} in ${user.locationTrips[user.mostVisitedLocation] || 0} trip${user.locationTrips[user.mostVisitedLocation] === 1 ? '' : 's'})`
                 }
             </p>
             <p>
                 Most Spent Location: 
                 {!user.mostSpentLocation ? 
                     " Nowhere yet!" : 
-                    ` #${user.mostSpentLocation} ${locations.find(location => location.id === user.mostSpentLocation)?.city || "NONE"}, ${locations.find(location => location.id === user.mostSpentLocation)?.state || "NONE"} ($${Number.isInteger(user.locationTotals[user.mostSpentLocation]) ? user.locationTotals[user.mostSpentLocation] : user.locationTotals[user.mostSpentLocation]?.toPrecision(3) || "0.00"} in ${user.locationTrips[user.mostSpentLocation] || 0} trip${user.locationTrips[user.mostSpentLocation] === 1 ? '' : 's'})`
+                    ` #${user.mostSpentLocation} ${locations.find(location => location.id === user.mostSpentLocation)?.city || "NONE"}, ${locations.find(location => location.id === user.mostSpentLocation)?.state || "NONE"} ($${Number.isInteger(user.locationTotals[user.mostSpentLocation]) ? user.locationTotals[user.mostSpentLocation] : user.locationTotals[user.mostSpentLocation]?.toPrecision(4) || "0.00"} in ${user.locationTrips[user.mostSpentLocation] || 0} trip${user.locationTrips[user.mostSpentLocation] === 1 ? '' : 's'})`
                 }
             </p>
             <p>
@@ -344,35 +349,49 @@ export default function Home() {
                     ` ${itemIndexToName(user.mostBoughtItem)} (${user.itemTrips[user.mostBoughtItem]} trip${user.itemTrips[user.mostBoughtItem] === 1 ? '' : 's'})`
                 }
             </p>
-            <p className="text-xl font-semibold">Grand Total: ${Number.isInteger(user.grandTotal) ? user.grandTotal : user.grandTotal.toPrecision(3)} in {user.totalTrips} trip{user.totalTrips === 1 ? '' : 's'} to {user.totalLocations} location{user.totalLocations === 1 ? '' : 's'} {user.totalStates === 1 ? 'in' : 'across'} {user.totalStates} state{user.totalStates === 1 ? '' : 's'}</p>
+            <p className="text-xl font-bold">Grand Total: ${Number.isInteger(user.grandTotal) ? user.grandTotal : user.grandTotal.toPrecision(4)} in {user.totalTrips} trip{user.totalTrips === 1 ? '' : 's'} to {user.totalLocations} location{user.totalLocations === 1 ? '' : 's'} {user.totalStates === 1 ? 'in' : 'across'} {user.totalStates} state{user.totalStates === 1 ? '' : 's'}</p>
 
           </div>
         </div>
 
         <div className="flex flex-col text-center items-center w-[80%] md:w-[40%]">
           <div className='flex flex-col md:flex-row justify-between items-start w-full'>
-            <p className="text-3xl font-semibold w-full text-left">Trip History</p>
+            <p className="text-3xl font-bold w-full text-left">Trip History</p>
             <LinkButton label='Add Trip' className='w-full md:w-[70%] mt-3 md:mt-0' color='yellow' onClick={() => setIsAddingTrip(true)}></LinkButton>
           </div>
           <div className="my-4 w-full">
-            {trips && trips.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map((trip, index) => (
-              <TripCard
-                trip={trip}
-                key={index}
-                locationDoc={locations.filter(loc => loc.id == trip.location).at(0)}
-                date={trip.date}
-                price={Number.isInteger(trip.total) ? trip.total.toString() : trip.total.toPrecision(3)}
-                locationString={`#${trip.location} ${locations.find(location => location.id === trip.location)?.city || "NONE"}, ${trip.state}`}
-                items={trip.items}
-                locationVisitNumber={trip.locationTripIdx}
-                stateVisitNumber={trip.stateTripIdx}
-                lifetimeVisitNumber={trip.lifetimeTripIdx}
-                state={trip.state}
-                setLocationViewed={setLocationViewed}
-              />
-            ))}
+          {trips &&
+            trips
+              .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+              .slice((currentPage - 1) * 4, currentPage * 4) // Slice the trips array to get the subset for the current page
+              .map((trip, index) => (
+                <TripCard
+                  trip={trip}
+                  key={index}
+                  locationDoc={locations.filter(loc => loc.id == trip.location).at(0)}
+                  date={trip.date}
+                  price={Number.isInteger(trip.total) ? trip.total.toString() : trip.total.toPrecision(4)}
+                  locationString={`#${trip.location} ${locations.find(location => location.id === trip.location)?.city || "NONE"}, ${trip.state}`}
+                  items={trip.items}
+                  locationVisitNumber={trip.locationTripIdx}
+                  stateVisitNumber={trip.stateTripIdx}
+                  lifetimeVisitNumber={trip.lifetimeTripIdx}
+                  state={trip.state}
+                  setLocationViewed={setLocationViewed}
+                />
+          ))}
           </div>
-          <div className="w-[15%] h-[50px] rounded-xl bg-bucee-yellow -mt-4"></div>
+          <div className="w-min h-[50px] rounded-xl bg-bucee-red -mt-4 flex flex-row font-bold justify-center items-center text-xl">
+          {Array.from({ length: pages }, (_, index) => (
+            <p
+              className={`h-[100%] rounded-xl flex justify-center items-center ${index === 0 ? 'rounded-l-xl' : ''} ${index === (pages - 1) ? 'rounded-r-xl' : ''} hover:cursor-pointer hover:bg-bucee-red-darker active:bg-bucee-red-darkest px-2`}
+              key={index + 1}
+              onClick={() => setCurrentPage(index + 1)}
+            >
+              {index + 1}
+            </p>
+          ))}
+          </div>
         </div>
       </div>}
       {isAddingTrip && (
@@ -391,7 +410,7 @@ export default function Home() {
               </select>
             </div>
 
-            <TextInput type='number' label='Total' onChange={handleTotalChange} value={total}/>
+            <TextInput type='number' className='w-full' label='Total' onChange={handleTotalChange} value={total}/>
             <div className="flex flex-col gap-2 mb-4 w-full">
               <div className="flex flex-row w-full justify-between gap-4">
                 <label>

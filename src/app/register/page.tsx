@@ -40,7 +40,7 @@ export default function Home() {
   const handleRegister = async (e: { preventDefault: () => void; }) => {
     e.preventDefault();
     if (password !== confirmPassword) {
-      setRegisterError('Passwords do not match');
+      setRegisterError('Passwords do not match, please try again.');
       return;
     }
     try {
@@ -49,15 +49,16 @@ export default function Home() {
       router.push('/login');
     } catch (error) {
       console.error('Error registering:', error);
-      setRegisterError('Email already in use, please try again');
+      setRegisterError('Email already in use, please try again.');
     }
   };
 
   return (
     <main className="flex min-h-screen flex-col items-center w-full">
-      <div className="flex flex-col-reverse md:flex-row pt-20 items-center w-full justify-center">
+      <img className="mt-14 w-[90%] md:w-[50%]" src="https://i.imgur.com/7ZrW2DR.png"></img>
+      <div className="flex flex-col-reverse md:flex-row pt-14 items-center w-full justify-center">
         <div className="flex flex-col text-center w-[80%] lg:w-[40%] xl:w-[30%] items-center bg-gray-200 p-8 rounded-xl text-black">
-          <p className="text-5xl font-semibold w-full">Register</p>
+          <p className="text-5xl font-bold w-full">Register</p>
           <form className="w-full" onSubmit={handleRegister}>
             <TextInput className='mt-8' label='First Name' value={firstName} onChange={handleFirstNameChange} />
             <TextInput label='Last Name (optional)' value={lastName} onChange={handleLastNameChange} />
