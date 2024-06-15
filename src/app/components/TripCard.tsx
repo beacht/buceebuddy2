@@ -58,7 +58,17 @@ function getOrdinalSuffix(val: number): string {
   }
 }
 
-const TripCard: React.FC<TripCardProps> = ({trip, date, price, locationDoc, locationString, items, locationVisitNumber, stateVisitNumber, lifetimeVisitNumber, state, setLocationViewed}) => {
+const TripCard: React.FC<TripCardProps> = ({date, price, locationDoc, locationString, items, locationVisitNumber, stateVisitNumber, lifetimeVisitNumber, state, setLocationViewed}) => {
+  const handleDirectionsClick = () => {
+    console.log(locationDoc, "hi");
+    if (locationDoc) {
+      const { address, city, state } = locationDoc;
+      const query = encodeURIComponent(`${address}, ${city}, ${state}`);
+      const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${query}`;
+      window.open(googleMapsUrl, '_blank');
+    }
+  };
+
   return (
     <div className="w-full flex-col rounded-xl bg-white p-4 text-left mb-8 text-black">
       <div className="flex flex-row justify-between text-xl font-bold">
@@ -70,7 +80,7 @@ const TripCard: React.FC<TripCardProps> = ({trip, date, price, locationDoc, loca
       <p>{getOrdinalSuffix(locationVisitNumber)} location trip, {getOrdinalSuffix(stateVisitNumber)} {state} trip, {getOrdinalSuffix(lifetimeVisitNumber)} ever</p>
       <div className="flex flex-col gap-4 w-full md:flex-row justify-center items-center md:justify-center mt-3">
         {/* <LinkButton textSize="text-sm lg:text-xl" className='w-[70%] md:w-[40%]' label='Delete' onClick={() => {setTripToBeDeleted(trip); setIsDeletingTrip(true);}} color="red"/> */}
-        <LinkButton textSize="text-sm lg:text-xl" className='w-[70%] md:w-[40%]' label='Directions' onClick={() => {setLocationViewed(locationDoc)}} color="red"/>
+        <LinkButton textSize="text-sm lg:text-xl" className='w-[70%] md:w-[40%]' label='Directions' onClick={handleDirectionsClick} color="red"/>
       </div>
     </div>
   );
