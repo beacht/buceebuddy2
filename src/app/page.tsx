@@ -1,20 +1,18 @@
 /* eslint-disable react/no-unescaped-entities */
 /* eslint-disable jsx-a11y/alt-text */
 /* eslint-disable @next/next/no-img-element */
-import { Metadata } from 'next';
+"use client";
 import LinkButton from './components/LinkButton';
-
-export const metadata: Metadata = {
-  title: 'Buc-ee Buddy',
-}
+import { useRouter } from 'next/navigation';
 
 export default function Home(){
+  const router = useRouter();
 
   return (
     <main className="flex min-h-screen flex-col items-center w-full mb-40">
-      <img className="mt-14 w-[90%] md:w-[50%]" src="https://i.imgur.com/7ZrW2DR.png"></img>
+      <img className="mt-14 w-[90%] md:w-[50%]" src="https://i.imgur.com/massYr2.png"></img>
       <div className="flex flex-col-reverse md:flex-row pt-14 items-center justify-center">
-        <div className="flex flex-col text-center md:text-left w-[80%] md:w-[66%]">
+        <div className="flex flex-col text-center md:text-left w-[90%] md:w-[66%]">
           <p className="text-5xl font-bold">Howdy!</p>
           <p className="text-2xl font-bold">Welcome to Buc-ee Buddy!</p>
           <br></br>
@@ -26,13 +24,13 @@ export default function Home(){
           <br></br>
           <p className="text-lg font-semibold">From Florida to Texas to Colorado, this handy tool is essential for any Buc-ee's fan.</p>
         </div>
-        <img src="https://buc-ees.com/wp-content/uploads/2020/02/buc-ees-logo-retina.png" className="w-[25%] md:w-[15%] mb-8 md:mb-0 md:ml-8"></img>
+        <img src="https://buc-ees.com/wp-content/uploads/2020/02/buc-ees-logo-retina.png" className="w-[0%] md:w-[15%] md:ml-8"></img>
       </div>
 
 
       <div className="flex flex-col md:flex-row gap-12 md:justify-center w-[50%] md:w-[75%] pt-20 text-center">
-       <LinkButton label='Register' href='/register' color="yellow"/>
-       <LinkButton label='Log In' href='/login' color="red"/>
+       <LinkButton label='Register' href='/register' onClick={() => router.push('/register')}  color="yellow"/>
+       <LinkButton label='Log In' href='/login' onClick={() => router.push('/login')} color="red"/>
        {/* <LinkButton label='About' href='/about' color="yellow"/> */}
       </div>
     </main>

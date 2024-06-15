@@ -256,7 +256,7 @@ export default function Home() {
 
   return (
     <main className="flex min-h-screen flex-col items-center w-full mb-40">
-      <img className="mt-14 w-[90%] md:w-[50%]" src="https://i.imgur.com/7ZrW2DR.png"></img>
+      <img className="mt-14 w-[90%] md:w-[50%]" src="https://i.imgur.com/massYr2.png"></img>
       {user && locations && <div className="flex flex-col md:flex-row pt-14 items-center md:items-start w-full justify-center gap-8">
         <div className="flex flex-col text-center w-[80%] md:w-[40%]">
           <p className="text-3xl font-bold text-center md:text-left w-full">Welcome, {user.firstName}!</p>
