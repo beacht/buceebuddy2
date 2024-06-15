@@ -329,14 +329,14 @@ export default function Home() {
             <br></br>
 
             <p>
-                Most Visited Location: 
+                Most Visited: 
                 {!user.mostVisitedLocation ? 
                     " Nowhere yet!" : 
                     ` #${user.mostVisitedLocation} ${locations.find(location => location.id === user.mostVisitedLocation)?.city || "NONE"}, ${locations.find(location => location.id === user.mostVisitedLocation)?.state || "NONE"} ($${Number.isInteger(user.locationTotals[user.mostVisitedLocation]) ? user.locationTotals[user.mostVisitedLocation] : user.locationTotals[user.mostVisitedLocation]?.toFixed(2) || "0.00"} in ${user.locationTrips[user.mostVisitedLocation] || 0} trip${user.locationTrips[user.mostVisitedLocation] === 1 ? '' : 's'})`
                 }
             </p>
             <p>
-                Most Spent Location: 
+                Most Spent: 
                 {!user.mostSpentLocation ? 
                     " Nowhere yet!" : 
                     ` #${user.mostSpentLocation} ${locations.find(location => location.id === user.mostSpentLocation)?.city || "NONE"}, ${locations.find(location => location.id === user.mostSpentLocation)?.state || "NONE"} ($${Number.isInteger(user.locationTotals[user.mostSpentLocation]) ? user.locationTotals[user.mostSpentLocation] : user.locationTotals[user.mostSpentLocation]?.toFixed(2) || "0.00"} in ${user.locationTrips[user.mostSpentLocation] || 0} trip${user.locationTrips[user.mostSpentLocation] === 1 ? '' : 's'})`
@@ -396,7 +396,7 @@ export default function Home() {
       </div>}
       {isAddingTrip && (
         <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex justify-center items-center text-black">
-          <div className="flex flex-col items-center bg-gray-200 p-8 rounded-xl">
+          <div className="flex flex-col items-center bg-gray-300 p-8 rounded-xl">
             <p className="text-2xl font-semibold w-full text-center mb-4">Add Trip</p>
             <TextInput type='date' label='Date' className='w-full' onChange={handleDateChange} value={date}/>
 

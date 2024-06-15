@@ -57,7 +57,7 @@ export default function Home() {
     <main className="flex min-h-screen flex-col items-center w-full">
       <img className="mt-14 w-[90%] md:w-[50%]" src="https://i.imgur.com/massYr2.png"></img>
       <div className="flex flex-col-reverse md:flex-row pt-14 items-center w-full justify-center">
-        <div className="flex flex-col text-center w-[80%] lg:w-[40%] xl:w-[30%] items-center bg-gray-200 p-8 rounded-xl text-black">
+        <div className="flex flex-col text-center w-[80%] lg:w-[40%] xl:w-[30%] items-center bg-gray-300 p-8 rounded-xl text-black">
           <p className="text-5xl font-bold w-full">Register</p>
           <form className="w-full" onSubmit={handleRegister}>
             <TextInput className='mt-8' label='First Name' value={firstName} onChange={handleFirstNameChange} />

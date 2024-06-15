@@ -30,7 +30,7 @@ export default function Home(){
 
       <div className="flex flex-col md:flex-row gap-12 md:justify-center w-[50%] md:w-[75%] pt-20 text-center">
        <LinkButton label='Register' href='/register' onClick={() => router.push('/register')}  color="yellow"/>
-       <LinkButton label='Log In' href='/login' onClick={() => router.push('/login')} color="red"/>
+       <LinkButton label='Log In' href='/login' className='mb-12 md:mb-0' onClick={() => router.push('/login')} color="red"/>
        {/* <LinkButton label='About' href='/about' color="yellow"/> */}
       </div>
     </main>
