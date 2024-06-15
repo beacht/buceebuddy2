@@ -8,16 +8,15 @@
   --background-end-rgb: 245, 210, 1;
 }
 
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
 body {
   color: rgb(var(--foreground-rgb));
   background: url('https://i.imgur.com/lG5lnQo.png') no-repeat center center fixed;
-  background-size: auto;
-}
-
-@media (min-width: 1024px) {
-  body {
-    background-size: cover;
-  }
+  background-size: cover;
 }
 
 @layer utilities {
